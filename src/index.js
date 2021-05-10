@@ -3,11 +3,6 @@ import { createGitgraph, templateExtend, TemplateName } from '@gitgraph/js';
 
 const octo = new Octokit();
 
-document.getElementById('app').innerHTML = `
-  <h1>Hello Git!</h1>
-  <div id="gitgraph"/>
-`;
-
 (async function () {
   const repoParams = {
     owner: 'iliashchuk',
