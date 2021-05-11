@@ -3,32 +3,46 @@ import { createGitgraph, templateExtend, TemplateName } from '@gitgraph/js';
 
 const octo = new Octokit();
 
-(async function () {
+const uniqueCommits = new Set();
+const graphContainer = document.getElementById('gitgraph');
+var withoutHash = templateExtend(TemplateName.Metro, {
+  commit: {
+    message: {
+      displayHash: false,
+      displayAuthor: false,
+      font: '1em Arial, sans-serif',
+    },
+    spacing: 40,
+    dot: {
+      size: 8,
+    },
+  },
+  tag: {
+    font: '1em Arial, sans-serif',
+  },
+  branch: {
+    label: { font: '1em Arial, sans-serif' },
+    spacing: 20,
+    lineWidth: 6,
+  },
+});
+const gitgraph = createGitgraph(graphContainer, { template: withoutHash });
+
+fetchAndRenderGraph();
+
+// setInterval(fetchAndRenderGraph, 10000);
+
+async function fetchAndRenderGraph() {
   const repoParams = {
     owner: 'iliashchuk',
     repo: 'agitile-kanban',
   };
-  const graphContainer = document.getElementById('gitgraph');
 
-  if (!graphContainer) {
-    return;
-  }
-
-  var withoutHash = templateExtend(TemplateName.Metro, {
-    commit: {
-      message: {
-        displayHash: false,
-        displayAuthor: false,
-      },
-    },
-  });
-  const gitgraph = createGitgraph(graphContainer, { template: withoutHash });
   const graphBranches = {};
 
   const { data: branches } = await octo.rest.repos.listBranches(repoParams);
 
   const branchCommitsDictionary = {};
-  const uniqueCommits = new Set();
 
   for (const branch of branches) {
     const { data: branchCommits } = await octo.rest.repos.listCommits({
@@ -46,7 +60,7 @@ const octo = new Octokit();
     branchCommitsDictionary[branch.name] = commitDict;
   }
 
-  const getUniqueBranchCommints = (branchName, commitDict) => {
+  const getUniqueBranchCommits = (branchName, commitDict) => {
     const uniqueBranchCommits = [];
     function populateBranchCommits(commit) {
       if (!commit) {
@@ -141,7 +155,7 @@ const octo = new Octokit();
   )) {
     const commitDict = branchCommitsDictionary[branch.name];
 
-    commits.push(...getUniqueBranchCommints(branch.name, commitDict));
+    commits.push(...getUniqueBranchCommits(branch.name, commitDict));
   }
 
   const sorterdCommits = commits.sort((commitA, commitB) => {
@@ -180,4 +194,4 @@ const octo = new Octokit();
     //   graphBranches[mergeInto].merge({ branch: graphBranch });
     // }
   }
-})();
+}
