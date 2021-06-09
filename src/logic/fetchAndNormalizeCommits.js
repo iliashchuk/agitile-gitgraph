@@ -1,10 +1,10 @@
 import { Octokit } from '@octokit/rest';
 
 const octo = new Octokit();
-const uniqueCommits = new Set();
 
 export async function fetchAndNormalizeCommits(projectParams) {
   const { data: branches } = await octo.rest.repos.listBranches(projectParams);
+  const uniqueCommits = new Set();
 
   const branchCommitsDictionary = {};
 

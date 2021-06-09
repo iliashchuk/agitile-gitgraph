@@ -33,7 +33,7 @@ window.renderGitgraph = async () => {
   // renderCommits(gitgraph, await fetchAndNormalizeCommits(project));
   // refetchAndRenderGraph(project);
 
-  setInterval(() => refetchAndRenderGraph(project), 10000);
+  setInterval(() => refetchAndRenderGraph(project), 2000);
 
   async function refetchAndRenderGraph(projectParams) {
     const commits = await fetchAndNormalizeCommits(projectParams);

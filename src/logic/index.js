@@ -1,4 +1,4 @@
 export * from './fetchAndNormalizeCommits';
-export * from './graphRenderer';
+export * from './createGraph';
 export * from './renderCommits';
 export * from './dispatchMergeEvent';
