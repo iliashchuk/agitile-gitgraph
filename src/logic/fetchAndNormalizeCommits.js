@@ -122,6 +122,8 @@ export async function fetchAndNormalizeCommits(projectParams) {
     commits.push(...getUniqueBranchCommits(branch.name, commitDict));
   }
 
+  console.log(commits);
+
   return commits.sort((commitA, commitB) => {
     const ADate = new Date(commitA.commit.committer.date);
     const BDate = new Date(commitB.commit.committer.date);
