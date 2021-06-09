@@ -1,6 +1,11 @@
-import { createGraph, fetchAndNormalizeCommits, renderCommits } from './logic';
+import {
+  createGraph,
+  fetchAndNormalizeCommits,
+  renderCommits,
+  dispatchMergeEvent,
+} from './logic';
 
-window.renderGitgraph = () => {
+window.renderGitgraph = async () => {
   const container = document.getElementById('Gitgraph-container');
 
   const locationParams = window.location.pathname
@@ -25,12 +30,31 @@ window.renderGitgraph = () => {
   // });
 
   const gitgraph = createGraph(graphElement);
-  fetchAndRenderGraph(project);
+  // renderCommits(gitgraph, await fetchAndNormalizeCommits(project));
+  // refetchAndRenderGraph(project);
 
-  setInterval(() => fetchAndRenderGraph(project), 1000);
+  setInterval(() => refetchAndRenderGraph(project), 10000);
 
-  async function fetchAndRenderGraph(projectParams) {
-    renderCommits(gitgraph, await fetchAndNormalizeCommits(projectParams));
+  async function refetchAndRenderGraph(projectParams) {
+    const commits = await fetchAndNormalizeCommits(projectParams);
+
+    const finishMergeBranches = ['main', 'development', 'dev'];
+    const mergedTaskBranches = commits
+      .filter(
+        ({ mergeInto, branch }) =>
+          finishMergeBranches.includes(mergeInto) &&
+          !finishMergeBranches.includes(branch)
+      )
+      .map(({ branch }) => branch);
+
+    console.log(mergedTaskBranches);
+
+    if (mergedTaskBranches.length !== 0) {
+      dispatchMergeEvent(mergedTaskBranches);
+    }
+
+    console.log(commits);
+    renderCommits(gitgraph, commits);
   }
 };
 
