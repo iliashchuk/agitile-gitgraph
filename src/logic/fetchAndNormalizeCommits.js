@@ -109,7 +109,10 @@ export async function fetchAndNormalizeCommits(projectParams) {
 
       if (!uniqueCommitsInTheSession.has(commit.sha)) {
         uniqueCommitsInTheSession.add(commit.sha);
-        newCommits.push(commit);
+        newCommits.push({
+          ...commit,
+          branch: branchName,
+        });
       }
       // else {
       //   commits.find(({ sha }) => sha === commit.sha).mergeInto = branchName;
