@@ -25,7 +25,9 @@ window.renderGitgraph = async () => {
   container.appendChild(graphElement);
 
   const gitgraph = createGraph(graphElement);
-  fetchAndRenderGraph(project);
+
+  // TODO: rewrite to handle adequately in standalone mode
+  setTimeout(() => fetchAndRenderGraph(project), 2000);
 
   setInterval(() => fetchAndRenderGraph(project), 5000);
 
