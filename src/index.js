@@ -24,16 +24,12 @@ window.renderGitgraph = async () => {
   graphElement.id = 'graph';
   container.appendChild(graphElement);
 
-  // window.addEventListener('project-ready', ({ detail: project }) => {
-  //   console.log('event?', project);
-  //   fetchAndRenderGraph(project);
-  // });
-
   const gitgraph = createGraph(graphElement);
   fetchAndRenderGraph(project);
 
   setInterval(() => fetchAndRenderGraph(project), 5000);
 
+  // ACTUALLY POLLING IS PERFECTLY FINE!
   async function fetchAndRenderGraph(projectParams) {
     const { commits, newCommits } = await fetchAndNormalizeCommits(
       projectParams
