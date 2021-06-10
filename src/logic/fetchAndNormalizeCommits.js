@@ -1,10 +1,15 @@
 import { Octokit } from '@octokit/rest';
 
-const octo = new Octokit();
-const uniqueCommits = new Set();
+// needs reload after login :c
+const token = localStorage.getItem('github-token');
+const octo = token ? new Octokit({ auth: token }) : new Octokit();
+
+const uniqueCommitsInTheSession = new Set();
 
 export async function fetchAndNormalizeCommits(projectParams) {
   const { data: branches } = await octo.rest.repos.listBranches(projectParams);
+  const uniqueCommits = new Set();
+  const newCommits = [];
 
   const branchCommitsDictionary = {};
 
@@ -101,6 +106,11 @@ export async function fetchAndNormalizeCommits(projectParams) {
           branch: branchName,
         });
       }
+
+      if (!uniqueCommitsInTheSession.has(commit.sha)) {
+        uniqueCommitsInTheSession.add(commit.sha);
+        newCommits.push(commit);
+      }
       // else {
       //   commits.find(({ sha }) => sha === commit.sha).mergeInto = branchName;
       //   return;
@@ -122,12 +132,15 @@ export async function fetchAndNormalizeCommits(projectParams) {
     commits.push(...getUniqueBranchCommits(branch.name, commitDict));
   }
 
-  console.log(commits);
-
-  return commits.sort((commitA, commitB) => {
+  const sortedCommits = commits.sort((commitA, commitB) => {
     const ADate = new Date(commitA.commit.committer.date);
     const BDate = new Date(commitB.commit.committer.date);
 
     return ADate - BDate;
   });
+
+  return {
+    commits: sortedCommits,
+    newCommits,
+  };
 }

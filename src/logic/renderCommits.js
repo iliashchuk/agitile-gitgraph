@@ -1,6 +1,8 @@
-const graphBranches = {};
-
 export const renderCommits = (gitgraph, sortedCommits) => {
+  gitgraph.clear();
+
+  const graphBranches = {};
+
   for (const commitMeta of sortedCommits) {
     const { commit, branch, isMerge, mergedParentSha } = commitMeta;
     let graphBranch = graphBranches[branch];

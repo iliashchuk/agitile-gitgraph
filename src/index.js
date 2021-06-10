@@ -30,16 +30,21 @@ window.renderGitgraph = async () => {
   // });
 
   const gitgraph = createGraph(graphElement);
-  // renderCommits(gitgraph, await fetchAndNormalizeCommits(project));
+  renderCommits(
+    gitgraph,
+    await (await fetchAndNormalizeCommits(project)).commits
+  );
   // refetchAndRenderGraph(project);
 
-  setInterval(() => refetchAndRenderGraph(project), 10000);
+  setInterval(() => refetchAndRenderGraph(project), 5000);
 
   async function refetchAndRenderGraph(projectParams) {
-    const commits = await fetchAndNormalizeCommits(projectParams);
+    const { commits, newCommits } = await fetchAndNormalizeCommits(
+      projectParams
+    );
 
     const finishMergeBranches = ['main', 'development', 'dev'];
-    const mergedTaskBranches = commits
+    const mergedTaskBranches = newCommits
       .filter(
         ({ mergeInto, branch }) =>
           finishMergeBranches.includes(mergeInto) &&
@@ -47,13 +52,10 @@ window.renderGitgraph = async () => {
       )
       .map(({ branch }) => branch);
 
-    console.log(mergedTaskBranches);
-
     if (mergedTaskBranches.length !== 0) {
       dispatchMergeEvent(mergedTaskBranches);
     }
 
-    console.log(commits);
     renderCommits(gitgraph, commits);
   }
 };
