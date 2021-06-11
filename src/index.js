@@ -36,15 +36,14 @@ window.renderGitgraph = async () => {
     const { commits, newCommits } = await fetchAndNormalizeCommits(
       projectParams
     );
+    console.log(newCommits);
 
     const finishMergeBranches = ['main', 'development', 'dev'];
     const mergedTaskBranches = newCommits
       .filter(
-        ({ mergeInto, branch }) =>
-          finishMergeBranches.includes(mergeInto) &&
-          !finishMergeBranches.includes(branch)
+        ({ isMerge, branch }) => isMerge && finishMergeBranches.includes(branch)
       )
-      .map(({ branch }) => branch);
+      .map(({ mergedBranch }) => mergedBranch);
 
     if (mergedTaskBranches.length !== 0) {
       dispatchMergeEvent(mergedTaskBranches);
