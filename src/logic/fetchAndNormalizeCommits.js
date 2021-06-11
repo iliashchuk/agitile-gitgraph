@@ -4,12 +4,55 @@ import { Octokit } from '@octokit/rest';
 const token = localStorage.getItem('github-token');
 const octo = token ? new Octokit({ auth: token }) : new Octokit();
 
-const uniqueCommitsInTheSession = new Set();
+const uniqueCommitsInSession = new Set();
+
+// export async function fetchAndNormalizeActivity(projectParams) {
+//   const { data } = await octo.rest.activity.listRepoEvents({
+//     ...projectParams,
+//     per_page: 99,
+//   });
+//   console.log(data);
+//   const uniqueCommits = new Set();
+
+//   const activity = [];
+
+//   for (const event of data.reverse()) {
+//     const { payload, type } = event;
+
+//     if (type === 'CreateEvent') {
+//       if (payload.ref_type === 'branch') {
+//         activity.push({ type: 'branch', branch: payload.ref });
+//       }
+//     }
+
+//     if (type === 'PushEvent') {
+//       for (const commit of payload.commits) {
+//         if (!uniqueCommits.has(commit.sha)) {
+//           activity.push({ type: 'commit', commit, branch: payload.ref });
+//           uniqueCommits.add(commit.sha);
+//         }
+//       }
+//     }
+
+//     if (type === 'PullRequestEvent') {
+//       const { action, pull_request } = payload;
+//       if (action === 'closed' && pull_request.merged === true) {
+//         activity.push({
+//           type: 'merge',
+//           base: pull_request.base.ref,
+//           head: pull_request.head.ref,
+//         });
+//       }
+//     }
+//   }
+
+//   return activity;
+// }
 
 export async function fetchAndNormalizeCommits(projectParams) {
   const { data: branches } = await octo.rest.repos.listBranches(projectParams);
   const uniqueCommits = new Set();
-  const newCommits = [];
+  const newCommitsShas = [];
 
   const branchCommitsDictionary = {};
 
@@ -107,12 +150,9 @@ export async function fetchAndNormalizeCommits(projectParams) {
         });
       }
 
-      if (!uniqueCommitsInTheSession.has(commit.sha)) {
-        uniqueCommitsInTheSession.add(commit.sha);
-        newCommits.push({
-          ...commit,
-          branch: branchName,
-        });
+      if (!uniqueCommitsInSession.has(commit.sha)) {
+        uniqueCommitsInSession.add(commit.sha);
+        newCommitsShas.push(commit.sha);
       }
       // else {
       //   commits.find(({ sha }) => sha === commit.sha).mergeInto = branchName;
@@ -142,8 +182,22 @@ export async function fetchAndNormalizeCommits(projectParams) {
     return ADate - BDate;
   });
 
+  for (const commit of sortedCommits) {
+    const { isMerge, mergedParentSha } = commit;
+
+    if (isMerge && mergedParentSha) {
+      for (const parentCommit of sortedCommits) {
+        if (parentCommit.sha === mergedParentSha) {
+          commit.mergedBranch = parentCommit.branch;
+        }
+      }
+    }
+  }
+
+  console.log(newCommitsShas);
+
   return {
     commits: sortedCommits,
-    newCommits,
+    newCommits: sortedCommits.filter(({ sha }) => newCommitsShas.includes(sha)),
   };
 }

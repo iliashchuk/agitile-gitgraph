@@ -4,7 +4,7 @@ export const renderCommits = (gitgraph, sortedCommits) => {
   const graphBranches = {};
 
   for (const commitMeta of sortedCommits) {
-    const { commit, branch, isMerge, mergedParentSha } = commitMeta;
+    const { commit, branch, isMerge, mergedBranch } = commitMeta;
     let graphBranch = graphBranches[branch];
 
     if (!graphBranch) {
@@ -12,14 +12,7 @@ export const renderCommits = (gitgraph, sortedCommits) => {
       graphBranch = graphBranches[branch];
     }
 
-    if (isMerge && mergedParentSha) {
-      let mergedBranch;
-      for (const commit of sortedCommits) {
-        if (commit.sha === mergedParentSha) {
-          mergedBranch = commit.branch;
-        }
-      }
-
+    if (isMerge && mergedBranch) {
       graphBranch.merge(graphBranches[mergedBranch], commit.message);
       continue;
     }
